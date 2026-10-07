@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>ふたりの家計簿</title>
+<style>
+:root{--bg:#F4F2FB;--card:#fff;--text:#1E1B33;--sub:#7C7898;--line:#ECE9F7;--exp:#FF6B6B;--inc:#22C79A;--acc1:#6C5CE7;--acc2:#A66CFF;--sh:0 8px 24px rgba(108,92,231,.10);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13111F;--card:#1E1B30;--text:#F3F1FF;--sub:#9F9BBB;--line:#2D2A45;--sh:0 8px 24px rgba(0,0,0,.35)}}
+:root[data-theme="dark"]{--bg:#13111F;--card:#1E1B30;--text:#F3F1FF;--sub:#9F9BBB;--line:#2D2A45;--sh:0 8px 24px rgba(0,0,0,.35)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN",system-ui,sans-serif}
+#app{max-width:480px;margin:0 auto;padding:16px 16px 120px}
+h1{font-size:22px;margin:4px 0 14px;letter-spacing:.02em}
+.card{background:var(--card);border-radius:22px;padding:16px;box-shadow:var(--sh);margin-bottom:14px}
+.hero{background:linear-gradient(135deg,var(--acc1),var(--acc2));color:#fff;border-radius:26px;padding:18px;margin-bottom:14px;box-shadow:0 12px 28px rgba(108,92,231,.35)}
+.hero .big{font-size:32px;font-weight:800;margin:2px 0 12px}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.mini{background:rgba(255,255,255,.18);border-radius:16px;padding:10px 12px;font-size:12px}
+.mini b{display:block;font-size:17px;margin-top:2px}
+.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-weight:700}
+.nav button{border:0;background:var(--card);color:var(--text);width:36px;height:36px;border-radius:12px;font-size:16px;box-shadow:var(--sh)}
+.seg{display:flex;background:var(--line);border-radius:14px;padding:3px;margin-bottom:12px}
+.seg button{flex:1;border:0;background:none;color:var(--sub);padding:8px 0;border-radius:11px;font-size:14px;font-weight:700}
+.seg button.on{background:var(--card);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.chips{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--line);background:var(--card);color:var(--sub);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600}
+.chip.on{background:linear-gradient(135deg,var(--acc1),var(--acc2));color:#fff;border-color:transparent}
+.donut{position:relative;width:220px;height:220px;margin:4px auto 10px}
+.donut svg{width:100%;height:100%}
+.donut .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.donut .c small{color:var(--sub);font-size:12px}.donut .c b{font-size:22px}
+.cat{display:flex;align-items:center;gap:12px;padding:10px 6px;border-radius:14px;cursor:pointer}
+.cat.on{background:var(--line)}
+.ic{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;font-size:19px;flex:none}
+.cat .n{flex:1;font-weight:700;font-size:14px}.cat .n small{display:block;color:var(--sub);font-weight:500;font-size:11px}
+.amt{font-weight:800;font-size:14px;text-align:right}
+.exp{color:var(--exp)}.inc{color:var(--inc)}
+.tx{display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--line)}
+.tx:first-child{border-top:0}
+.tx .n{flex:1;font-size:14px;font-weight:700}.tx .n small{display:block;color:var(--sub);font-weight:500;font-size:11px}
+.del{border:0;background:none;color:var(--sub);font-size:16px}
+.sub{color:var(--sub);font-size:12px}
+.legend{display:flex;gap:14px;justify-content:center;font-size:12px;color:var(--sub);margin-top:4px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.empty{text-align:center;color:var(--sub);padding:24px 0;font-size:13px}
+.tabbar{position:fixed;left:0;right:0;bottom:0;padding:8px 18px calc(8px + env(safe-area-inset-bottom,0px));background:color-mix(in srgb,var(--card) 88%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;max-width:480px;margin:0 auto}
+.tabbar button.t{border:0;background:none;color:var(--sub);font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;width:64px}
+.tabbar button.t span{font-size:20px}.tabbar button.t.on{color:var(--acc1)}
+.fab{border:0;width:56px;height:56px;border-radius:20px;margin-top:-26px;background:linear-gradient(135deg,var(--acc1),var(--acc2));color:#fff;font-size:30px;box-shadow:0 10px 24px rgba(108,92,231,.5)}
+.ov{position:fixed;inset:0;background:rgba(10,8,25,.5);display:none;align-items:flex-end;justify-content:center;z-index:9}
+.ov.show{display:flex}
+.sheet{background:var(--card);width:100%;max-width:480px;border-radius:28px 28px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));max-height:92%;overflow-y:auto}
+.sheet h2{margin:0 0 12px;font-size:17px;display:flex;justify-content:space-between}
+.sheet h2 button{border:0;background:none;color:var(--sub);font-size:20px}
+input{width:100%;font-size:16px;border:1.5px solid var(--line);background:var(--bg);color:var(--text);border-radius:14px;padding:12px;margin-bottom:12px;font-family:inherit}
+input.amt-in{font-size:28px;font-weight:800;text-align:center}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.grid button{border:1.5px solid var(--line);background:var(--bg);color:var(--text);border-radius:14px;padding:10px 0;font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:3px}
+.grid button span{font-size:20px}.grid button.on{border-color:var(--acc1);background:color-mix(in srgb,var(--acc1) 14%,var(--card))}
+.save{width:100%;border:0;border-radius:16px;padding:15px;font-size:16px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--acc1),var(--acc2))}
+.pb{display:inline-block;margin-top:4px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800}
+.mini2{border-left:4px solid;background:var(--card);border-radius:16px;padding:10px 12px;box-shadow:var(--sh);font-size:12px}.mini2 b{font-size:14px}
+.file{display:block;text-align:center;border:1.5px dashed var(--acc1);color:var(--acc1);border-radius:14px;padding:12px;font-weight:700;font-size:14px;margin-bottom:10px}
+.att{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:13px}.att span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.thumb{width:48px;height:48px;object-fit:cover;border-radius:10px}
+.link{border:0;background:none;color:var(--sub);font-size:12px;text-decoration:underline;display:block;margin:14px auto}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="tabbar">
+  <button class="t" data-a="tab" data-v="home"><span>🍩</span>ホーム</button>
+  <button class="t" data-a="tab" data-v="trend"><span>📊</span>推移</button>
+  <button class="fab" data-a="add">＋</button>
+  <button class="t" data-a="tab" data-v="hist"><span>🧾</span>履歴</button>
+</div>
+<div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
+<script>
+const CATS={exp:[["食費","🍙","#FF7A59"],["日用品","🧴","#FFB347"],["住居","🏠","#6C5CE7"],["光熱費","💡","#F9D423"],["交通","🚃","#38BDF8"],["交際・娯楽","🎬","#F472B6"],["医療","💊","#34D399"],["衣服","👕","#A66CFF"],["その他","✨","#94A3B8"]],
+inc:[["給与","💼","#22C79A"],["賞与","🎁","#38BDF8"],["副収入","💻","#A66CFF"],["その他","✨","#94A3B8"]]};
+const WHO={a:"りん",b:"琴美"},WC={a:"#3B82F6",b:"#EC4899"};
+const pb=k=>`<span class="pb" style="background:${WC[k]}22;color:${WC[k]}">${WHO[k]}</span>`;
+const perWho=l=>`<div class="row">${["a","b"].map(k=>{const z=l.filter(x=>x.who==k);return `<div class="mini2" style="border-color:${WC[k]}">${pb(k)}<div class="sub" style="margin-top:6px">収入 <b class="inc">${fmt(sum(z,"inc"))}</b></div><div class="sub">支出 <b class="exp">${fmt(sum(z,"exp"))}</b></div></div>`}).join("")}</div>`;
+const dl=(v,up)=>v==0?`<span class="sub">±0</span>`:`<span class="${(v>0)==up?"inc":"exp"}" style="font-size:11px;font-weight:700">${v>0?"▲":"▼"}${fmt(Math.abs(v))}</span>`;
+const fmt=n=>"¥"+Math.round(n).toLocaleString("ja-JP");
+const pad=n=>String(n).padStart(2,"0");
+const ds=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const esc=s=>String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $=s=>document.querySelector(s);
+const info=(t,c)=>CATS[t].find(x=>x[0]===c)||CATS[t][CATS[t].length-1];
+const ago=n=>{const d=new Date();d.setDate(d.getDate()-n);return ds(d)};
+function load(){try{const v=localStorage.getItem("kakeibo");if(v)return JSON.parse(v)}catch(e){}return null}
+function save(){try{localStorage.setItem("kakeibo",JSON.stringify(tx));return true}catch(e){return false}}
+function demo(){const S=[[0,"e",1280,"食費","a","ランチ"],[0,"e",3400,"日用品","b","ドラッグストア"],[1,"e",680,"交通","a","電車"],[2,"e",5200,"食費","b","スーパー"],[3,"e",2400,"交際・娯楽","b","映画"],[4,"e",1800,"食費","a","ディナー"],[5,"e",7800,"衣服","b","秋服"],[6,"e",980,"食費","a","コンビニ"],[8,"e",9800,"光熱費","a","電気・ガス"],[10,"e",4200,"食費","b","まとめ買い"],[12,"e",3000,"医療","a","通院"],[14,"e",92000,"住居","a","家賃"],[16,"e",5600,"交際・娯楽","a","飲み会"],[20,"e",2800,"交通","b","定期"],[0,"i",3500,"副収入","b","フリマ"],[5,"i",280000,"給与","a","10月給与"],[7,"i",245000,"給与","b","10月給与"],[35,"e",88000,"住居","a","家賃"],[38,"e",31000,"食費","b","9月食費"],[42,"i",280000,"給与","a","9月給与"],[44,"i",245000,"給与","b","9月給与"],[45,"e",14000,"交際・娯楽","a","旅行"],[70,"e",86000,"住居","a","家賃"],[74,"i",520000,"給与","a","8月給与"],[100,"e",42000,"食費","b","食費"],[105,"i",150000,"賞与","a","夏賞与"],[140,"e",64000,"住居","a","家賃"],[170,"i",240000,"給与","b","給与"],[230,"e",56000,"住居","b","家賃"],[300,"i",600000,"給与","a","給与"],[390,"e",98000,"住居","a","家賃"],[420,"i",480000,"給与","a","給与"]];
+return S.map((s,i)=>({id:"d"+i,type:s[1]=="e"?"exp":"inc",amt:s[2],cat:s[3],who:s[4],date:ago(s[0]),memo:s[5]}))}
+let tx=load();if(!tx)tx=demo();
+const now=new Date();
+let st={tab:"home",mode:"exp",who:"all",ym:now.getFullYear()+"-"+pad(now.getMonth()+1),per:"d",sel:6,cat:null};
+let form={type:"exp",cat:"食費",who:"a"};
+
+function buckets(p){const t=new Date();t.setHours(0,0,0,0);const a=[];
+if(p=="d")for(let i=6;i>=0;i--){const d=new Date(t);d.setDate(d.getDate()-i);a.push({l:(d.getMonth()+1)+"/"+d.getDate(),l2:"("+"日月火水木金土"[d.getDay()]+")",s:ds(d),e:ds(d)})}
+if(p=="w"){const m=new Date(t);m.setDate(m.getDate()-((m.getDay()+6)%7));for(let i=5;i>=0;i--){const s=new Date(m);s.setDate(s.getDate()-i*7);const e=new Date(s);e.setDate(e.getDate()+6);a.push({l:(s.getMonth()+1)+"/"+s.getDate(),l2:"〜"+(e.getMonth()+1)+"/"+e.getDate(),s:ds(s),e:ds(e)})}}
+if(p=="m")for(let i=5;i>=0;i--){const d=new Date(t.getFullYear(),t.getMonth()-i,1);const e=new Date(d.getFullYear(),d.getMonth()+1,0);a.push({l:(d.getMonth()+1)+"月",l2:d.getFullYear()+"",s:ds(d),e:ds(e)})}
+if(p=="y")for(let i=2;i>=0;i--){const y=t.getFullYear()-i;a.push({l:y+"年",l2:"",s:y+"-01-01",e:y+"-12-31"})}
+return a}
+const flt=()=>tx.filter(x=>st.who=="all"||x.who==st.who);
+const sum=(a,t)=>a.filter(x=>x.type==t).reduce((s,x)=>s+x.amt,0);
+const txRow=(x,del)=>{const c=info(x.type,x.cat);return `<div class="tx"><div class="ic" style="background:${c[2]}22">${c[1]}</div><div class="n">${esc(x.memo)||x.cat}<small>${x.date.slice(5).replace("-","/")} ・ ${x.cat}</small>${pb(x.who)}</div><div class="amt ${x.type}">${x.type=="exp"?"-":"+"}${fmt(x.amt)}</div>${x.att?`<button class="del" data-a="att" data-v="${x.id}">📎</button>`:""}${del?`<button class="del" data-a="del" data-v="${x.id}">✕</button>`:""}</div>`};
+const whoChips=()=>`<div class="chips">${[["all","ふたり"],["a","🙋‍♂️ "+WHO.a],["b","🙋‍♀️ "+WHO.b]].map(([k,l])=>`<button class="chip ${st.who==k?"on":""}" data-a="who" data-v="${k}">${l}</button>`).join("")}</div>`;
+
+function home(){
+  const m=flt().filter(x=>x.date.startsWith(st.ym));
+  const inc=sum(m,"inc"),exp=sum(m,"exp"),bal=inc-exp;
+  const list=m.filter(x=>x.type==st.mode);const total=sum(m,st.mode);
+  const by={};list.forEach(x=>by[x.cat]=(by[x.cat]||0)+x.amt);
+  const rows=Object.entries(by).sort((a,b)=>b[1]-a[1]);
+  const R=78,C=2*Math.PI*R;let acc=0;
+  const arcs=rows.map(([c,v])=>{const len=v/total*C;const col=info(st.mode,c)[2];const s=`<circle cx="110" cy="110" r="${R}" fill="none" stroke="${col}" stroke-width="${st.cat==c?34:26}" stroke-dasharray="${Math.max(len-2,0.5)} ${C}" stroke-dashoffset="${-acc}" transform="rotate(-90 110 110)" stroke-linecap="butt" data-a="cat" data-v="${c}" style="cursor:pointer"/>`;acc+=len;return s}).join("");
+  const [y,mo]=st.ym.split("-");
+  return `<h1>👫 ふたりの家計簿</h1>
+  <div class="nav"><button data-a="mo" data-v="-1">‹</button><span>${y}年${+mo}月</span><button data-a="mo" data-v="1">›</button></div>
+  <div class="hero"><div style="opacity:.85;font-size:13px">今月の収支</div><div class="big">${bal<0?"-":""}${fmt(Math.abs(bal))}</div>
+  <div class="row"><div class="mini">収入<b>${fmt(inc)}</b></div><div class="mini">支出<b>${fmt(exp)}</b></div></div></div>
+  <div style="margin:-2px 0 14px">${perWho(tx.filter(x=>x.date.startsWith(st.ym)))}</div>
+  ${whoChips()}
+  <div class="card"><div class="seg"><button class="${st.mode=="exp"?"on":""}" data-a="mode" data-v="exp">支出</button><button class="${st.mode=="inc"?"on":""}" data-a="mode" data-v="inc">収入</button></div>
+  ${total?`<div class="donut"><svg viewBox="0 0 220 220"><circle cx="110" cy="110" r="${R}" fill="none" stroke="var(--line)" stroke-width="26"/>${arcs}</svg>${st.cat&&by[st.cat]?`<div class="c"><small>${st.cat}</small><b style="font-size:34px;color:${info(st.mode,st.cat)[2]}">${(by[st.cat]/total*100).toFixed(1)}%</b><small>${fmt(by[st.cat])} / ${fmt(total)}</small></div>`:`<div class="c"><small>${st.mode=="exp"?"支出合計":"収入合計"}</small><b>${fmt(total)}</b><small>カテゴリをタップで割合表示</small></div>`}</div>
+  ${rows.map(([c,v])=>{const i=info(st.mode,c);return `<div class="cat ${st.cat==c?"on":""}" data-a="cat" data-v="${c}"><div class="ic" style="background:${i[2]}22">${i[1]}</div><div class="n">${c}<small>${(v/total*100).toFixed(1)}%</small></div><div class="amt">${fmt(v)}</div></div>`}).join("")}`:`<div class="empty">この月のデータはまだありません</div>`}</div>
+  ${st.cat&&by[st.cat]?`<div class="card"><b>${info(st.mode,st.cat)[1]} ${st.cat}の明細</b><div style="margin-top:8px">${list.filter(x=>x.cat==st.cat).sort((a,b)=>b.date.localeCompare(a.date)).map(x=>txRow(x)).join("")}</div></div>`:""}`;
+}
+function trend(){
+  const all=flt(),bk=buckets(st.per);
+  const data=bk.map(b=>{const l=all.filter(x=>x.date>=b.s&&x.date<=b.e);const i=sum(l,"inc"),e=sum(l,"exp");return {...b,en:b.e,tl:l,i,e,n:i-e}});
+  if(st.sel==null||st.sel>=data.length)st.sel=data.length-1;
+  const mx=Math.max(1,...data.map(d=>Math.max(d.i,d.e,d.n))),mn=Math.min(0,...data.map(d=>d.n));
+  const W=340,H=226,top=14,bot=40,ch=H-top-bot,n=data.length,gw=W/n,bw=Math.min(18,gw*.28);
+  const y=v=>top+(mx-v)/(mx-mn)*ch,y0=y(0);
+  const bar=(x,v,f)=>`<rect x="${x}" y="${Math.min(y(v),y0)}" width="${bw}" height="${Math.max(Math.abs(y(v)-y0),2)}" rx="5" fill="${f}"/>`;
+  const g=data.map((d,k)=>{const x=k*gw,cx=x+gw/2;
+    return `<g data-a="bar" data-v="${k}" style="cursor:pointer"><rect x="${x+2}" y="0" width="${gw-4}" height="${H}" rx="12" fill="${k==st.sel?"var(--line)":"transparent"}"/>${bar(cx-bw-2,d.i,"url(#gi)")}${bar(cx+2,d.e,"url(#ge)")}<text x="${cx}" y="${H-22}" text-anchor="middle" font-size="11" font-weight="${k==st.sel?800:600}" fill="${k==st.sel?"var(--text)":"var(--sub)"}">${d.l}</text><text x="${cx}" y="${H-8}" text-anchor="middle" font-size="9.5" fill="var(--sub)">${d.l2}</text></g>`}).join("");
+  const pts=data.map((d,k)=>[k*gw+gw/2,y(d.n)]);
+  const line=`<line x1="0" x2="${W}" y1="${y0}" y2="${y0}" stroke="var(--sub)" stroke-opacity=".4" stroke-dasharray="3 4" pointer-events="none"/><g pointer-events="none"><path d="M${pts.map(p=>p.join(",")).join("L")}" fill="none" stroke="#6C5CE7" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>${pts.map((p,k)=>`<circle cx="${p[0]}" cy="${p[1]}" r="${k==st.sel?5.5:3.5}" fill="var(--card)" stroke="#6C5CE7" stroke-width="2.5"/>`).join("")}</g>`;
+  const s=data[st.sel],p=data[st.sel-1];
+  const raw=tx.filter(x=>x.date>=s.s&&x.date<=s.en);
+  return `<h1>📊 収支の推移</h1>${whoChips()}
+  <div class="card"><div class="seg">${[["d","日"],["w","週"],["m","月"],["y","年"]].map(([k,l])=>`<button class="${st.per==k?"on":""}" data-a="per" data-v="${k}">${l}</button>`).join("")}</div>
+  <svg viewBox="0 0 ${W} ${H}" style="width:100%"><defs><linearGradient id="gi" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3EE6B4"/><stop offset="1" stop-color="#16A57F"/></linearGradient><linearGradient id="ge" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8F8F"/><stop offset="1" stop-color="#F0485F"/></linearGradient></defs>${g}${line}</svg>
+  <div class="legend"><span><i style="background:var(--inc)"></i>収入</span><span><i style="background:var(--exp)"></i>支出</span><span><i style="background:#6C5CE7"></i>収支(折れ線)</span></div><div class="legend" style="margin-top:2px">バーをタップで詳細</div></div>
+  <div class="card"><b>${s.l}${s.l2&&st.per=="d"?s.l2:""} の詳細</b><div class="sub" style="margin:2px 0">${s.s.replace(/-/g,"/")}${s.s!=s.en?" 〜 "+s.en.replace(/-/g,"/"):""}</div>${p?`<span class="sub"> ・ 前の期間(${p.l})との比較</span>`:""}
+  <div class="row" style="margin:10px 0 6px"><div><div class="sub">収入</div><b class="inc">${fmt(s.i)}</b><div>${p?dl(s.i-p.i,true):""}</div></div><div><div class="sub">支出</div><b class="exp">${fmt(s.e)}</b><div>${p?dl(s.e-p.e,false):""}</div></div><div><div class="sub">収支</div><b>${s.n<0?"-":""}${fmt(Math.abs(s.n))}</b><div>${p?dl(s.n-p.n,true):""}</div></div></div>
+  <div style="margin:12px 0 4px" class="sub">ふたりの内訳</div>${perWho(raw)}
+  <div style="margin-top:10px">${s.tl.length?s.tl.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(x=>txRow(x)).join(""):`<div class="empty">この期間の記録はありません</div>`}</div></div>`;
+}
+function hist(){
+  const m=flt().filter(x=>x.date.startsWith(st.ym)).sort((a,b)=>b.date.localeCompare(a.date));
+  const [y,mo]=st.ym.split("-");
+  return `<h1>🧾 履歴</h1><div class="nav"><button data-a="mo" data-v="-1">‹</button><span>${y}年${+mo}月</span><button data-a="mo" data-v="1">›</button></div>${whoChips()}
+  <div class="card">${m.length?m.map(x=>txRow(x,1)).join(""):`<div class="empty">記録がありません</div>`}</div>
+  <button class="link" data-a="clear">サンプルデータを消してはじめる</button>`;
+}
+function render(){
+  $("#app").innerHTML={home,trend,hist}[st.tab]();
+  document.querySelectorAll(".t").forEach(b=>b.classList.toggle("on",b.dataset.v==st.tab));
+}
+function sheet(){
+  const cs=CATS[form.type];
+  $("#sheet").innerHTML=`<h2>記録を追加<button data-a="close">✕</button></h2>
+  <div class="seg"><button class="${form.type=="exp"?"on":""}" data-a="ty" data-v="exp">支出</button><button class="${form.type=="inc"?"on":""}" data-a="ty" data-v="inc">収入</button></div>
+  <input id="amt" class="amt-in" type="text" inputmode="numeric" placeholder="¥ 0" value="${form.amt||""}">
+  <div class="grid">${cs.map(c=>`<button class="${form.cat==c[0]?"on":""}" data-a="sc" data-v="${c[0]}"><span>${c[1]}</span>${c[0]}</button>`).join("")}</div>
+  <div class="chips">${["a","b"].map(k=>`<button class="chip ${form.who==k?"on":""}" data-a="sw" data-v="${k}">${k=="a"?"🙋‍♂️":"🙋‍♀️"} ${WHO[k]}</button>`).join("")}</div>
+  <input id="dt" type="date" value="${form.date||ds(new Date())}"><input id="memo" type="text" placeholder="メモ（任意）" value="${esc(form.memo)}">
+  <label class="file"><input id="file" type="file" accept="image/*,application/pdf" hidden>📎 レシート・ファイルを添付</label>
+  ${form.att?`<div class="att">${form.att.type.startsWith("image")?`<img class="thumb" src="${form.att.data}">`:`📄`}<span>${esc(form.att.name)}</span><button class="del" data-a="ratt">✕</button></div>`:""}${form.err?`<div class="sub exp" style="margin-bottom:8px">${form.err}</div>`:""}
+  <button class="save" data-a="save">保存する</button>`;
+}
+function keep(){const a=$("#amt");if(a){form.amt=a.value;form.date=$("#dt").value;form.memo=$("#memo").value}}
+document.addEventListener("click",e=>{
+  const el=e.target.closest("[data-a]");if(!el)return;
+  const a=el.dataset.a,v=el.dataset.v;
+  if(a=="add"){form={type:"exp",cat:"食費",who:"a"};sheet();$("#ov").classList.add("show");return}
+  if(a=="close"){$("#ov").classList.remove("show");return}
+  if(a=="ty"){keep();form.type=v;form.cat=CATS[v][0][0];sheet();return}
+  if(a=="sc"){keep();form.cat=v;sheet();return}
+  if(a=="sw"){keep();form.who=v;sheet();return}
+  if(a=="save"){keep();const n=parseInt(String(form.amt||"").replace(/[^\d]/g,""),10);if(!n){$("#amt").focus();return}
+    tx.push({id:"t"+Date.now(),type:form.type,amt:n,cat:form.cat,who:form.who,date:form.date||ds(new Date()),memo:form.memo||"",att:form.att});if(!save()){delete tx[tx.length-1].att;save()}
+    st.ym=(form.date||ds(new Date())).slice(0,7);$("#ov").classList.remove("show");render();return}
+  if(a=="ratt"){keep();form.att=null;sheet();return}
+  if(a=="att"){const t=tx.find(x=>x.id==v);if(!t||!t.att)return;$("#sheet").innerHTML=`<h2>添付ファイル<button data-a="close">✕</button></h2>${t.att.type.startsWith("image")?`<img src="${t.att.data}" style="width:100%;border-radius:16px">`:`<a href="${t.att.data}" download="${esc(t.att.name)}" target="_blank" style="color:var(--acc1);font-weight:700">📄 ${esc(t.att.name)} を開く</a>`}`;$("#ov").classList.add("show");return}
+  if(a=="tab"){st.tab=v;st.cat=null}
+  if(a=="mode"){st.mode=v;st.cat=null}
+  if(a=="who")st.who=v;
+  if(a=="cat")st.cat=st.cat==v?null:v;
+  if(a=="mo"){const [y,m]=st.ym.split("-").map(Number);const d=new Date(y,m-1+ +v,1);st.ym=d.getFullYear()+"-"+pad(d.getMonth()+1);st.cat=null}
+  if(a=="per"){st.per=v;st.sel=null}
+  if(a=="bar")st.sel=+v;
+  if(a=="del"){tx=tx.filter(x=>x.id!=v);save()}
+  if(a=="clear"){tx=[];save()}
+  render();
+});
+$("#ov").addEventListener("click",e=>{if(e.target.id=="ov")$("#ov").classList.remove("show")});
+document.addEventListener("change",e=>{if(e.target.id!="file")return;const f=e.target.files[0];if(!f)return;keep();form.err="";const rd=new FileReader();
+rd.onload=()=>{if(f.type.startsWith("image/")){const im=new Image();im.onload=()=>{const k=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);form.att={name:f.name,type:"image/jpeg",data:c.toDataURL("image/jpeg",.7)};sheet()};im.src=rd.result}else if(f.size<=500000){form.att={name:f.name,type:f.type,data:rd.result};sheet()}else{form.err="ファイルは500KB以下にしてください";sheet()}};rd.readAsDataURL(f)});
+render();
+</script>
+</body>
+</html>
